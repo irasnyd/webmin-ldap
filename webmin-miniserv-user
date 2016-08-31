@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+import crypt
+import sys
+import os
+
+def main():
+    '''
+    Take any number of parameters of colon-separated username/password pairs,
+    and convert them into Webmin style MD5 crypted password output, suitable
+    for use in the miniserv.users file.
+
+    A random salt is used for each user.
+
+    Input:
+        username1:password1
+
+    Output:
+        The username/password crypted correctly for /etc/webmin/miniserv.users,
+        for example:
+
+        username1:$1$MPaWN4nA$9M7HDLek9c.yRbcJmQ.y5.::::::::0::::
+    '''
+    for elem in sys.argv[1:]:
+        username, password = elem.split(':', 1)
+
+        # md5 crypt with random salt
+        salt = '$1$%s$' % (os.urandom(32).encode('base_64'), )
+        crypted_pw = crypt.crypt(password, salt)
+
+        # correct number of colons for webmin miniserv.users format
+        print '%s:%s::::::::0::::' % (username, crypted_pw, )
+
+    # exit successfully
+    return 0
+
+if __name__ == '__main__':
+    main()

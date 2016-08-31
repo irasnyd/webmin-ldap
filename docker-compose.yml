@@ -1,0 +1,20 @@
+webmin:
+  image: irasnyd/webmin-ldap
+  ports:
+    - "10000:10000"
+  environment:
+    - "WEBMIN_ROOT_PASSWORD=supersecret"
+    - "WEBMIN_LDAP_ADMINISTRATORS=user1:pass1,user2:pass2"
+    - "WEBMIN_SSL=1"
+    - "LDAP_URI=ldap://ldap.example.com"
+    - "LDAP_BINDDN=cn=admin,dc=example,dc=com"
+    - "LDAP_BINDPW=adminpassword"
+    - "LDAP_BASE=dc=example,dc=com"
+    - "LDAP_BASE_UID=10000"
+    - "LDAP_BASE_GID=10000"
+    - "LDAP_DEFAULT_SHELL=/bin/bash"
+    - "LDAP_DEFAULT_GROUP=ldapusers"
+    - "LDAP_USER_BASE=ou=Users,dc=example,dc=com"
+    - "LDAP_GROUP_BASE=ou=Groups,dc=example,dc=com"
+  mem_limit: "1g"
+  restart: "always"

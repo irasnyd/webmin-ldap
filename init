@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# webmin root password
+WEBMIN_ROOT_PASSWORD="${WEBMIN_ROOT_PASSWORD:-root}"
+
+# webmin ldap administrators
+WEBMIN_LDAP_ADMINISTRATORS="${WEBMIN_LDAP_ADMINISTRATORS:-admin1:password1,admin2:password2}"
+
+# enable ssl
+WEBMIN_SSL="${WEBMIN_SSL:-1}"
+
+# webmin ldap server settings
+LDAP_URI="${LDAP_URI:-ldap://ldap.example.com}"
+LDAP_BINDDN="${LDAP_BINDDN:-cn=admin,dc=example,dc=com}"
+LDAP_BINDPW="${LDAP_BINDPW:-password}"
+LDAP_BASE="${LDAP_BASE:-dc=example,dc=com}"
+
+# webmin ldap useradmin module settings
+LDAP_BASE_UID="${LDAP_BASE_UID:-500}"
+LDAP_BASE_GID="${LDAP_BASE_GID:-500}"
+LDAP_DEFAULT_SHELL="${LDAP_DEFAULT_SHELL:-/bin/sh}"
+LDAP_DEFAULT_GROUP="${LDAP_DEFAULT_GROUP:-ldapgroup}"
+LDAP_HOME_BASE="${LDAP_HOME_BASE:-/home}"
+LDAP_USER_BASE="${LDAP_USER_BASE:-ou=Users,dc=example,dc=com}"
+LDAP_GROUP_BASE="${LDAP_GROUP_BASE:-ou=Groups,dc=example,dc=com}"
+
+# set root password
+echo "$WEBMIN_ROOT_PASSWORD" | passwd --stdin root
+
+# Create /etc/nslcd.conf for automatic LDAP setup of the
+# webmin ldap-useradmin module. We use this method rather than
+# setting the configuration directly, because it allows us to specify
+# the LDAP bind password.
+cat > /etc/nslcd.conf << EOF
+uri ${LDAP_URI}
+binddn ${LDAP_BINDDN}
+bindpw ${LDAP_BINDPW}
+base ${LDAP_BASE}
+EOF
+
+# Set a value in a webmin configuration file
+# $1: configuration file name
+# $2: key
+# $3: value
+webmin_config_set() {
+	local CONF="$1" KEY="$2" VALUE="$3"
+	sed -i -e "/^${KEY}=.*$/d" "${CONF}"
+	echo "${KEY}=${VALUE}" >> "${CONF}"
+}
+
+# Set a Webmin ldap-useradmin module setting
+# $1: key
+# $2: value
+ldapuseradmin_set() {
+	webmin_config_set "/etc/webmin/ldap-useradmin/config" "$1" "$2"
+}
+
+# add webmin settings for ldap-useradmin module
+ldapuseradmin_set "base_uid" "$LDAP_BASE_UID"
+ldapuseradmin_set "base_gid" "$LDAP_BASE_GID"
+ldapuseradmin_set "default_shell" "$LDAP_DEFAULT_SHELL"
+ldapuseradmin_set "home_base" "$LDAP_HOME_BASE"
+ldapuseradmin_set "user_base" "$LDAP_USER_BASE"
+ldapuseradmin_set "group_base" "$LDAP_GROUP_BASE"
+ldapuseradmin_set "default_other" "0"
+
+[[ -n "$LDAP_DEFAULT_GROUP" ]] && ldapuseradmin_set "default_group" "$LDAP_DEFAULT_GROUP"
+
+# webmin ssl configuration
+webmin_config_set "/etc/webmin/miniserv.conf" "ssl" "$WEBMIN_SSL"
+
+# create ldap administrator users which only have permissions to access the
+# ldap-useradmin module and nothing else
+IFS=$',' read -ra WEBMIN_LDAP_ADMINISTRATORS_ARRAY <<< "$WEBMIN_LDAP_ADMINISTRATORS"
+for i in "${WEBMIN_LDAP_ADMINISTRATORS_ARRAY[@]}"; do
+	/usr/bin/webmin-miniserv-user "$i" >> /etc/webmin/miniserv.users
+	echo "${i%%:*}: ldap-useradmin system-status" >> /etc/webmin/webmin.acl
+done
+
+# start webmin underneath tini init
+exec /usr/bin/tini -- /etc/webmin/start --nofork
