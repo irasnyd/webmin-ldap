@@ -78,8 +78,12 @@ webmin_config_set "/etc/webmin/miniserv.conf" "ssl" "$WEBMIN_SSL"
 # ldap-useradmin module and nothing else
 IFS=$',' read -ra WEBMIN_LDAP_ADMINISTRATORS_ARRAY <<< "$WEBMIN_LDAP_ADMINISTRATORS"
 for i in "${WEBMIN_LDAP_ADMINISTRATORS_ARRAY[@]}"; do
+	# create user and grant permissions
 	/usr/bin/webmin-miniserv-user "$i" >> /etc/webmin/miniserv.users
 	echo "${i%%:*}: ldap-useradmin system-status" >> /etc/webmin/webmin.acl
+
+	# disable categories in the sidebar
+	echo "notabs_${i%%:*}=2" >> /etc/webmin/config
 done
 
 # start webmin underneath tini init
