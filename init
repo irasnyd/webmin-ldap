@@ -66,6 +66,9 @@ ldapuseradmin_set "group_base" "$LDAP_GROUP_BASE"
 # set "Create and update in other modules" -> "No"
 ldapuseradmin_set "default_other" "0"
 
+# set "Encryption methods for passwords" -> "LDAP SSHA"
+ldapuseradmin_set "md5" "4"
+
 [[ -n "$LDAP_DEFAULT_GROUP" ]] && ldapuseradmin_set "default_group" "$LDAP_DEFAULT_GROUP"
 
 # webmin ssl configuration
