@@ -8,7 +8,7 @@ ENV TINI_VERSION v0.10.0
 ENTRYPOINT [ "/init" ]
 EXPOSE 10000
 
-RUN yum -y install http://pilotfiber.dl.sourceforge.net/project/webadmin/webmin/${WEBMIN_VERSION}/webmin-${WEBMIN_VERSION}-${WEBMIN_RELEASE}.noarch.rpm \
+RUN yum -y install http://downloads.sourceforge.net/project/webadmin/webmin/${WEBMIN_VERSION}/webmin-${WEBMIN_VERSION}-${WEBMIN_RELEASE}.noarch.rpm \
         && yum -y install openldap-servers perl-LDAP \
         && yum -y update \
         && yum -y clean all
