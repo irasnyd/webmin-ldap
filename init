@@ -62,6 +62,8 @@ ldapuseradmin_set "default_shell" "$LDAP_DEFAULT_SHELL"
 ldapuseradmin_set "home_base" "$LDAP_HOME_BASE"
 ldapuseradmin_set "user_base" "$LDAP_USER_BASE"
 ldapuseradmin_set "group_base" "$LDAP_GROUP_BASE"
+
+# set "Create and update in other modules" -> "No"
 ldapuseradmin_set "default_other" "0"
 
 [[ -n "$LDAP_DEFAULT_GROUP" ]] && ldapuseradmin_set "default_group" "$LDAP_DEFAULT_GROUP"
