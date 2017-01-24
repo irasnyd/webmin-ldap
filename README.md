@@ -45,3 +45,4 @@ Webmin ldap-useradmin Module Settings
 - `LDAP_HOME_BASE` - Default base of home directories (default: "/home")
 - `LDAP_USER_BASE` - Default organizational unit for users (default: "ou=Users,dc=example,dc=com")
 - `LDAP_GROUP_BASE` - Default organizational unit for groups (default: "ou=Groups,dc=example,dc=com")
+- `LDAP_SHELLS` - Set the shells that are available in the UI (default: "/bin/bash,/bin/tcsh,/bin/zsh")

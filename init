@@ -23,6 +23,7 @@ LDAP_DEFAULT_GROUP="${LDAP_DEFAULT_GROUP:-ldapgroup}"
 LDAP_HOME_BASE="${LDAP_HOME_BASE:-/home}"
 LDAP_USER_BASE="${LDAP_USER_BASE:-ou=Users,dc=example,dc=com}"
 LDAP_GROUP_BASE="${LDAP_GROUP_BASE:-ou=Groups,dc=example,dc=com}"
+LDAP_SHELLS="${LDAP_SHELLS:-/bin/bash,/bin/tcsh,/bin/zsh}"
 
 # set root password
 echo "$WEBMIN_ROOT_PASSWORD" | passwd --stdin root
@@ -84,6 +85,16 @@ for i in "${WEBMIN_LDAP_ADMINISTRATORS_ARRAY[@]}"; do
 
 	# disable categories in the sidebar
 	echo "notabs_${i%%:*}=2" >> /etc/webmin/config
+done
+
+# truncate /etc/shells
+cat > /etc/shells << EOF
+EOF
+
+# create /etc/shells with the user specified list
+IFS=$',' read -ra LDAP_SHELLS_ARRAY <<< "$LDAP_SHELLS"
+for i in "${LDAP_SHELLS_ARRAY[@]}"; do
+	echo "$i" >> /etc/shells
 done
 
 # start webmin underneath tini init
